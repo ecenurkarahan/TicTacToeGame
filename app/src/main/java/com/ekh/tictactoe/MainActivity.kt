@@ -12,13 +12,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -39,6 +35,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ekh.tictactoe.ui.theme.TicTacToeTheme
 
 //draw means berabere
@@ -47,21 +45,33 @@ enum class WhoWon{
     PlayerX,
     Draw
 }
+class HoldScoresViewModel : ViewModel() {
+    var playerOScore = 0
+    var playerXScore = 0
+    var drawScore =0
+    fun updateO(){
+        playerOScore++
+    }
+    fun updateX(){
+        playerXScore++
+    }
+    fun updateDraw(){
+        drawScore++
+    }
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Column {
-
-            }
+            val scoresViewModel = viewModel<HoldScoresViewModel>()
             TicTacToeTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ActualGame()
+                    ActualGame(scoresViewModel)
                 }
             }
         }
@@ -71,7 +81,8 @@ class MainActivity : ComponentActivity() {
 
 //this will hold all the components
 @Composable
-fun ActualGame() {
+fun ActualGame(scoresViewModel:HoldScoresViewModel) {
+
     var winnerString = "Game has not finished yet."
     //true: O turn, false: X turn, null: boş
     val playerOturn= remember {
@@ -87,10 +98,6 @@ fun ActualGame() {
     val winner  = remember {
         mutableStateOf<WhoWon?>(null)
     }
-    //these are to hold the scores
-    var score1 = remember{ 0 }
-    var score2=remember{ 0 }
-    var drawCount=remember{ 0}
     //when we click play again, this lambda will be used
     val clickOfButton : () -> Unit ={
         playerOturn.value=true
@@ -135,14 +142,14 @@ fun ActualGame() {
         //i change the message to notify who won the game
         when(winner.value){
             WhoWon.PlayerO-> {
-                score1 += 1
+                scoresViewModel.updateO()
             winnerString= "Winner is Player 'O', Congrats!"}
             WhoWon.Draw -> {
-                drawCount += 1
+                scoresViewModel.updateDraw()
                 winnerString= "Game ended with a draw!"
             }
             WhoWon.PlayerX -> {
-                score2 += 1
+                scoresViewModel.updateX()
                 winnerString= "Winner is Player 'X', Congrats!"
             }
             else -> {}
@@ -210,7 +217,7 @@ fun ActualGame() {
         val imageModifier = Modifier
             .size(150.dp)
             .background(Color.White)
-        KeepingPlayerScores(score1, score2, drawCount)
+        KeepingPlayerScores(scoresViewModel.playerOScore, scoresViewModel.playerXScore, scoresViewModel.drawScore)
         Text(text = winnerString, modifier = Modifier.padding(8.dp))
         Image(painter = painterResource(id = R.drawable.tictactoe),
             contentDescription = "tictactoe",
@@ -236,9 +243,13 @@ fun XOxBoard(
                 )
             }
     ) {
-        Column (modifier = Modifier.fillMaxSize(1f).background(Color.Transparent)){
+        Column (modifier = Modifier
+            .fillMaxSize(1f)
+            .background(Color.Transparent)){
             for(i in 0..2){
-                Row(modifier = Modifier.weight(1f).background(Color.Transparent)) {
+                Row(modifier = Modifier
+                    .weight(1f)
+                    .background(Color.Transparent)) {
                     for(j in 0..2){
                         val cellIndex = i * 3 + j
                         //if there is a winning situation, we paint the grids to red
@@ -250,7 +261,9 @@ fun XOxBoard(
                         //here i put columns as the grids and to differentiate the grids
                         //i used border
                         Column(
-                            modifier = Modifier.weight(1f).background(backgroundColor)
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(backgroundColor)
                                 .border(shape = RectangleShape, width = 1.dp, color = Color.Black)
                         ) {
                             DecideonXorO(move = theMoves[cellIndex])
@@ -284,8 +297,8 @@ fun WhoseTurn(playerOturn: MutableState<Boolean>, clickOfButton : ()->Unit) {
 
 @Composable
 fun KeepingPlayerScores(score1: Int, score2: Int, roundCount: Int){
-    val playerO = "Player 'O': $score1"
-    val playerX  = "Player 'X': $score2"
+    val playerO = "Player 'O': ${(score1/2).toInt().toString()}"
+    val playerX  = "Player 'X': ${(score2/2).toInt().toString()}"
     Row (modifier = Modifier,
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.Top){
