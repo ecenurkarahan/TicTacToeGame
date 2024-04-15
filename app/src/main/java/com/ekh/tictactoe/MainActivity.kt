@@ -77,7 +77,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-// skorlar tutulmuyor, bazen kapanıyor
 
 //this will hold all the components
 @Composable
@@ -218,7 +217,8 @@ fun ActualGame(scoresViewModel:HoldScoresViewModel) {
             .size(150.dp)
             .background(Color.White)
         KeepingPlayerScores(scoresViewModel.playerOScore, scoresViewModel.playerXScore, scoresViewModel.drawScore)
-        Text(text = winnerString, modifier = Modifier.padding(8.dp))
+        Text(text = winnerString, modifier = Modifier.padding(8.dp),
+            color = Color.Black)
         Image(painter = painterResource(id = R.drawable.tictactoe),
             contentDescription = "tictactoe",
             modifier=imageModifier)
@@ -284,9 +284,11 @@ fun WhoseTurn(playerOturn: MutableState<Boolean>, clickOfButton : ()->Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (playerOturn.value) {
-            Text(text = "Player 'O' turn.",modifier = Modifier.padding(8.dp))
+            Text(text = "Player 'O' turn.",modifier = Modifier.padding(8.dp)
+            , color = Color.Black)
         } else {
-            Text(text = "Player 'X' turn.",modifier = Modifier.padding(8.dp))
+            Text(text = "Player 'X' turn.",modifier = Modifier.padding(8.dp),
+                color= Color.Black)
         }
         Button(onClick = clickOfButton,
             modifier = Modifier.padding(8.dp)) {
